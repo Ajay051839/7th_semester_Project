@@ -1,0 +1,147 @@
+go atlas 
+
+# SECTION 1: Mesh Definition #################################################
+#
+mesh space.mult=1.0
+x.mesh loc= -0.009 spac=0.0001
+x.mesh loc=0.00 spac=0.001
+x.mesh loc=0.015 spac=0.001
+x.mesh loc=0.019 spac=0.001
+x.mesh loc=0.035 spac=0.001
+x.mesh loc=0.050 spac=0.001
+x.mesh loc=0.059 spac=0.001
+
+y.mesh location=0.0 spacing=0.005
+y.mesh loc=0.0016 spacing=0.005
+y.mesh location=0.0028 spacing=0.001
+y.mesh location=0.0108 spacing=0.001
+y.mesh location=0.012 spacing=0.001
+y.mesh location=0.0136 spacing=0.001
+
+
+
+
+# SECTION 2: Structure Specification #########################################
+
+region num=1 material=SiO2 x.min=-0.009 y.min=0.0
+region num=2 material=SiO2 x.min=-0.009 y.min=0.0
+region	num=3 name=source  material=SiGe x.min=0.0 x.max=0.015 y.min=0.0028 y.max=0.0108 x.comp=0.5
+region num=4 name=pocket  material=Ge x.min=0.015 x.max=0.018 y.min=0.0028 y.max=0.0108 
+region	num=5 name=channel material=Si x.min=0.018 x.max=0.035 y.min=0.0028 y.max=0.0108
+region	num=6 name=drain   material=Si x.min=0.035 x.max=0.050 y.min=0.0028 y.max=0.0108 
+region	num=7  material=SiO2 x.min=0.025 x.max=0.035 y.min=0.0016 y.max=0.0028
+region	num=8  material=SiO2 x.min=0.025 x.max=0.035 y.min=0.0108 y.max=0.012
+region	num=11  material=HfO2 x.min=0.015 x.max=0.025 y.min=0.0016 y.max=0.0028
+region	num=12  material=HfO2 x.min=0.015 x.max=0.025 y.min=0.0108 y.max=0.012
+region	num=9  material=Aluminum x.min=-0.009 x.max=0.00 y.min=0.0028 y.max=0.0108 
+region	num=10  material=Aluminum x.min=0.050 x.max=0.059 y.min=0.0028 y.max=0.0108
+
+#electrode
+electrode name=gate material=NPolyZn x.min=0.015 x.max=0.025 y.min=0 y.max=0.0016
+electrode name=gate2 material=NPolyZn x.min=0.025 x.max=0.035 y.min=0 y.max=0.0016
+electrode name=gate1 material=NPolyZn x.min=0.015 x.max=0.025 y.min=0.012 y.max=0.0136
+electrode name=gate3 material=NPolyZn x.min=0.025 x.max=0.035 y.min=0.012 y.max=0.0136
+electrode name=source        x.min=-0.009 x.max=0.00 y.min=0.0028 y.max=0.0108
+electrode name=drain        x.min=0.050 x.max=0.059  y.min=0.0028 y.max=0.0108
+
+
+
+
+# SECTION 4: Doping Specification ############################################
+#
+doping uniform p.type conc=1.0e20 x.min=0.0 x.max=0.015 y.min=0.0028 y.max=0.0108
+doping uniform n.type conc=4.0e19 x.min=0.015 x.max=0.019 y.min=0.0028 y.max=0.0108
+doping uniform n.type conc=1.0e16 x.min=0.019 x.max=0.035 y.min=0.0028 y.max=0.0108
+doping uniform n.type conc=1.0e20 x.min=0.035 x.max=0.050 y.min=0.0028 y.max=0.0108
+
+#workfun
+contact name=gate workfun=4.6
+contact name=gate1 workfun=4.6 common=gate
+contact name=gate2 workfun=4.2 common=gate
+contact name=gate3 workfun=4.2 common=gate
+material material=Si me.tunnel=1.08 mh.tunnel=0.57 
+material material=Ge me.tunnel=.56 mh.tunnel=0.29 
+
+
+#
+ 
+#MATERIAL REGION=2 TAUN0=2e-7 TAUP0=1e-7
+#MATERIAL REGION=2 TAUN0=2e-4 TAUP0=1e-4
+# SECTION 3: Quantum Region ##################################################
+# SECTION 3: Quantum Region ##################################################
+
+
+
+
+
+#
+qtregion number=1 PTS.TUNNEL=51 PTS.NORMAL=5
+
+qtx.mesh loc=0.013 spac=0.001
+qtx.mesh loc=0.017 spac=0.001
+qtx.mesh loc=0.021 spac=0.001
+qtx.mesh loc=0.025 spac=0.001
+qtx.mesh loc=0.029 spac=0.001
+qtx.mesh loc=0.033 spac=0.001
+qtx.mesh loc=0.035 spac=0.001
+
+qty.mesh loc=0.002 spac=0.001
+qty.mesh loc=0.005 spac=0.001
+qty.mesh loc=0.009 spac=0.001
+qty.mesh loc=0.0108 spac=0.001
+
+#
+interf qf=3e10 y.max=0.002
+
+# SECTION 5: Models ##########################################################
+#
+models srh conmob bbt.kane bbt.nonlocal qtunn.dir=1 bbt.forward temp=300 print
+output val.band con.band qfn qfp e.field j.electron j.hole j.conduction j.total ex.field ey.field flowline e.mobility h.mobility qss e.temp h.temp j.disp
+mobility nhance phance
+
+
+save outf=hst.str
+# SECTION 6: Calculations ####################################################
+
+solve init
+method NEWTON TRAP
+solve prev
+
+solve vdrain=0.5
+solve vgate=0
+save outf=tfet00.str
+tonyplot tfet00.str
+
+solve vgate=0.5
+solve vdrain=0.5
+save outf=tfet55.str
+tonyplot tfet55.str
+
+solve vdrain=0.5 outf=vg2_si
+
+log outf=idvg2_si.log
+load infile=vg2_si
+solve vgate=-0.2 vstep=0.02 vfinal=0.5 name=gate
+tonyplot idvg2_si.log
+
+log outf=cgd_si.log
+load infile=vg2_si
+solve vgate=0.0 vstep=0.02 vfinal =0.5 name =gate AC FREQ=1.0e9
+tonyplot cgd_si.log
+
+solve vgate=0.5 outf=vd2_si
+log outf=idvd2_si.log
+load infile=vd2_si
+solve vdrain=0 vstep=0.02 vfinal=0.5 name=drain
+tonyplot idvd2_si.log
+
+go atlas
+extract init inf="idvg2_si.log"
+extract name="vt1"(xintercept(maxslope(curve(v."gate",i."drain"))))
+extract name="Ion" max(abs(i."drain"))
+extract name="Ioff" min(abs(i."drain"))
+extract name="Ion/Ioff" (max(abs(i."drain")))/(min(abs(i."drain")))
+extract name="gm" (slope(maxslope(curve(abs(v."gate"),abs(i."drain")))))
+extract name="sub_vt_swing" 1.0/(slope(maxslope(curve(abs(v."gate"),log10(abs(i."drain"))))))
+extract name="sub_vt_slope" (slope(maxslope(curve(abs(v."gate"),log10(abs(i."drain"))))))
+quit
